@@ -450,6 +450,63 @@
 					"final_df.coalesce(1).write.format(\"parquet\").mode(\"overwrite\").save(\"abfss://root@synapsecicd21store.dfs.core.windows.net/nyc/\")"
 				],
 				"execution_count": 27
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"collapsed": true
+				},
+				"source": [
+					"final_df.coalesce(1).write.format('csv').mode(\"overwrite\").save('abfss://root@synapsecicd21store.dfs.core.windows.net/nyccsv/',header = 'true')"
+				],
+				"execution_count": 34
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"collapsed": true
+				},
+				"source": [
+					"dfread = spark.read.parquet('abfss://root@synapsecicd21store.dfs.core.windows.net/nyc/')"
+				],
+				"execution_count": 28
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"collapsed": false
+				},
+				"source": [
+					"display(dfread)"
+				],
+				"execution_count": 29
 			}
 		]
 	}
