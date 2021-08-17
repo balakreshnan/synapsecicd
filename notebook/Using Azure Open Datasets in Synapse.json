@@ -43,7 +43,7 @@
 				"memory": 224,
 				"automaticScaleJobs": false
 			},
-			"sessionKeepAliveTimeout": 15
+			"sessionKeepAliveTimeout": 30
 		},
 		"cells": [
 			{
@@ -296,7 +296,7 @@
 					"                                       .withColumnRenamed('max(precipTime)','max_precipTime')\\\n",
 					"                                       .withColumnRenamed('max(precipDepth)','max_precipDepth')"
 				],
-				"execution_count": 16
+				"execution_count": 17
 			},
 			{
 				"cell_type": "markdown",
@@ -311,14 +311,14 @@
 					"nyc_taxi_holiday_weather_df = nyc_taxi_holiday_df.join(weather_df_grouped, on = 'datetime' , how = 'left')\n",
 					"nyc_taxi_holiday_weather_df.cache()"
 				],
-				"execution_count": 17
+				"execution_count": 18
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"nyc_taxi_holiday_weather_df.show(5)"
 				],
-				"execution_count": 18
+				"execution_count": 19
 			},
 			{
 				"cell_type": "code",
@@ -330,7 +330,7 @@
 					"\n",
 					"display(nyc_taxi_holiday_weather_df.describe())"
 				],
-				"execution_count": 19
+				"execution_count": 20
 			},
 			{
 				"cell_type": "markdown",
@@ -347,7 +347,7 @@
 					"final_df = nyc_taxi_holiday_weather_df.filter(nyc_taxi_holiday_weather_df.tipAmount > 0)\\\n",
 					"                                      .filter(nyc_taxi_holiday_weather_df.totalAmount > 0)"
 				],
-				"execution_count": 20
+				"execution_count": 21
 			},
 			{
 				"cell_type": "markdown",
@@ -364,7 +364,7 @@
 				"source": [
 					"spark.sql(\"DROP TABLE IF EXISTS NYCTaxi.nyc_taxi_holiday_weather\"); "
 				],
-				"execution_count": 21
+				"execution_count": 22
 			},
 			{
 				"cell_type": "code",
@@ -373,7 +373,7 @@
 					"spark.sql(\"CREATE DATABASE NYCTaxi\"); \n",
 					"spark.sql(\"USE NYCTaxi\");"
 				],
-				"execution_count": 22
+				"execution_count": 23
 			},
 			{
 				"cell_type": "markdown",
@@ -392,7 +392,7 @@
 					"final_df.write.saveAsTable(\"nyc_taxi_holiday_weather\");\n",
 					"spark.sql(\"SELECT COUNT(*) FROM nyc_taxi_holiday_weather\").show();"
 				],
-				"execution_count": 23
+				"execution_count": 24
 			},
 			{
 				"cell_type": "code",
@@ -409,9 +409,47 @@
 					"collapsed": true
 				},
 				"source": [
-					"final_df.coalesce(1).write.parquet(\"abfss://root@synapsecicd21store.dfs.core.windows.net/nyc/nycweather\")"
+					"#final_df.coalesce(1).write.parquet(\"abfss://root@synapsecicd21store.dfs.core.windows.net/nyc/nycweather\")"
 				],
 				"execution_count": 24
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"collapsed": false
+				},
+				"source": [
+					"display(final_df)"
+				],
+				"execution_count": 26
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"collapsed": true
+				},
+				"source": [
+					"final_df.coalesce(1).write.format(\"parquet\").mode(\"overwrite\").save(\"abfss://root@synapsecicd21store.dfs.core.windows.net/nyc/\")"
+				],
+				"execution_count": 27
 			}
 		]
 	}
