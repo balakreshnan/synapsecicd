@@ -1,0 +1,17 @@
+{
+	"name": "weathersql",
+	"properties": {
+		"content": {
+			"query": "SELECT\n    *\nFROM\n    OPENROWSET(\n        BULK 'https://synapsecicd21store.dfs.core.windows.net/root/nyc/nycweather/part-00000-ea289ab0-7671-4261-9260-c9887edd45d9-c000.snappy.parquet',\n        FORMAT='PARQUET'\n    ) AS [result]\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"poolName": "Built-in",
+				"databaseName": "nyctaxi"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
