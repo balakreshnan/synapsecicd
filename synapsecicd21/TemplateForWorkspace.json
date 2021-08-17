@@ -1093,6 +1093,26 @@
 				"type": "SqlQuery"
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/weatherds')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- This is auto-generated code\nSELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK 'https://synapsecicd21store.dfs.core.windows.net/root/nyccsv/part-00000-b391f4f8-3029-4514-8cb6-609d059c3e05-c000.csv',\n        FORMAT = 'CSV',\n        HEADER_ROW = TRUE,\n        PARSER_VERSION='2.0'\n    ) AS [result]\n\nUSE [nyctaxi];\nGO\n\nDROP VIEW IF EXISTS weatherds;\nGO\n\nCREATE VIEW weatherds AS\nSELECT\n     *\nFROM\n    OPENROWSET(\n        BULK 'https://synapsecicd21store.dfs.core.windows.net/root/nyccsv/part-00000-b391f4f8-3029-4514-8cb6-609d059c3e05-c000.csv',\n        FORMAT = 'CSV',\n        HEADER_ROW = TRUE,\n        PARSER_VERSION='2.0'\n    ) AS [result];\n\n\nselect * from weatherds;",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"poolName": "Built-in",
+						"databaseName": "nyctaxi"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
 		}
 	]
 }
