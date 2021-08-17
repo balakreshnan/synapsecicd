@@ -538,12 +538,15 @@
 						"sparkVersion": "3.0",
 						"nodeCount": 10,
 						"cores": 32,
-						"memory": 224
-					}
+						"memory": 224,
+						"automaticScaleJobs": false
+					},
+					"sessionKeepAliveTimeout": 30
 				},
 				"cells": [
 					{
 						"cell_type": "markdown",
+						"metadata": {},
 						"source": [
 							"# Using Azure Open Datasets in Synapse - Enrich NYC Green Taxi Data with Holiday and Weather\n",
 							"\n",
@@ -555,6 +558,7 @@
 					},
 					{
 						"cell_type": "markdown",
+						"metadata": {},
 						"source": [
 							"## Data loading \n",
 							"Let's first load the [NYC green taxi trip records](https://azure.microsoft.com/en-us/services/open-datasets/catalog/nyc-taxi-limousine-commission-green-taxi-trip-records/). The Open Datasets package contains a class representing each data source (NycTlcGreen for example) to easily filter date parameters before downloading."
@@ -562,6 +566,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"from azureml.opendatasets import NycTlcGreen\n",
 							"\n",
@@ -578,6 +583,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"# Display 5 rows\n",
 							"\n",
@@ -588,6 +594,7 @@
 					},
 					{
 						"cell_type": "markdown",
+						"metadata": {},
 						"source": [
 							"Now that the initial data is loaded. Let's do some projection on the data to \n",
 							"- create new columns for the month number, day of month, day of week, and hour of day. These info is going to be used in the training model to factor in time-based seasonality.\n",
@@ -596,6 +603,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"# Extract month, day of month, and day of week from pickup datetime and add a static column for the country code to join holiday data. \n",
 							"\n",
@@ -613,6 +621,7 @@
 					},
 					{
 						"cell_type": "markdown",
+						"metadata": {},
 						"source": [
 							"Remove some of the columns that won't need for modeling or additional feature building.\n",
 							"\n",
@@ -622,6 +631,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"# Remove unused columns from nyc green taxi data\n",
 							"\n",
@@ -638,6 +648,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"# Display 5 rows\n",
 							"nyc_tlc_df_clean.show(5)"
@@ -647,6 +658,7 @@
 					},
 					{
 						"cell_type": "markdown",
+						"metadata": {},
 						"source": [
 							"## Enrich with holiday data\n",
 							"Now that we have taxi data downloaded and roughly prepared, add in holiday data as additional features. Holiday-specific features will assist model accuracy, as major holidays are times where taxi demand increases dramatically and supply becomes limited. \n",
@@ -657,6 +669,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"from azureml.opendatasets import PublicHolidays\n",
 							"\n",
@@ -671,12 +684,14 @@
 					},
 					{
 						"cell_type": "markdown",
+						"metadata": {},
 						"source": [
 							"Rename the countryRegionCode and date columns to match the respective field names from the taxi data, and also normalize the time so it can be used as a key. "
 						]
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"hol_df_clean = hol_df.withColumnRenamed('countryRegionCode','country_code')\\\n",
 							"            .withColumn('datetime',f.to_date('date'))\n",
@@ -688,12 +703,14 @@
 					},
 					{
 						"cell_type": "markdown",
+						"metadata": {},
 						"source": [
 							"Next, join the holiday data with the taxi data by performing a left-join. This will preserve all records from taxi data, but add in holiday data where it exists for the corresponding datetime and country_code, which in this case is always \"US\". Preview the data to verify that they were merged correctly."
 						]
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"# enrich taxi data with holiday data\n",
 							"nyc_taxi_holiday_df = nyc_tlc_df_clean.join(hol_df_clean, on = ['datetime', 'country_code'] , how = 'left')\n",
@@ -705,6 +722,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"# Create a temp table and filter out non empty holiday rows\n",
 							"\n",
@@ -716,6 +734,7 @@
 					},
 					{
 						"cell_type": "markdown",
+						"metadata": {},
 						"source": [
 							"## Enrich with weather data¶\n",
 							"\n",
@@ -724,6 +743,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"from azureml.opendatasets import NoaaIsdWeather\n",
 							"\n",
@@ -735,6 +755,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"isd_df.show(5, truncate = False)"
 						],
@@ -743,6 +764,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"# Filter out weather info for new york city, remove the recording with null temperature \n",
 							"\n",
@@ -759,6 +781,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"# Remove unused columns\n",
 							"\n",
@@ -773,6 +796,7 @@
 					},
 					{
 						"cell_type": "markdown",
+						"metadata": {},
 						"source": [
 							"Next group the weather data so that you have daily aggregated weather values. \n",
 							""
@@ -780,6 +804,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"# Enrich weather data with aggregation statistics\n",
 							"\n",
@@ -791,6 +816,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"weather_df_grouped.show(5)"
 						],
@@ -799,6 +825,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"# Rename columns\n",
 							"\n",
@@ -808,31 +835,34 @@
 							"                                       .withColumnRenamed('max(precipDepth)','max_precipDepth')"
 						],
 						"outputs": [],
-						"execution_count": 16
+						"execution_count": 17
 					},
 					{
 						"cell_type": "markdown",
+						"metadata": {},
 						"source": [
 							"Merge the taxi and holiday data you prepared with the new weather data. This time you only need the datetime key, and again perform a left-join of the data. Run the describe() function on the new dataframe to see summary statistics for each field."
 						]
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"# enrich taxi data with weather\n",
 							"nyc_taxi_holiday_weather_df = nyc_taxi_holiday_df.join(weather_df_grouped, on = 'datetime' , how = 'left')\n",
 							"nyc_taxi_holiday_weather_df.cache()"
 						],
 						"outputs": [],
-						"execution_count": 17
+						"execution_count": 18
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"nyc_taxi_holiday_weather_df.show(5)"
 						],
 						"outputs": [],
-						"execution_count": 18
+						"execution_count": 19
 					},
 					{
 						"cell_type": "code",
@@ -845,10 +875,11 @@
 							"display(nyc_taxi_holiday_weather_df.describe())"
 						],
 						"outputs": [],
-						"execution_count": 19
+						"execution_count": 20
 					},
 					{
 						"cell_type": "markdown",
+						"metadata": {},
 						"source": [
 							"The summary statistics shows that the totalAmount field has negative values, which don't make sense in the context.\n",
 							"\n",
@@ -857,16 +888,18 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"# Remove invalid rows with less than 0 taxi fare or tip\n",
 							"final_df = nyc_taxi_holiday_weather_df.filter(nyc_taxi_holiday_weather_df.tipAmount > 0)\\\n",
 							"                                      .filter(nyc_taxi_holiday_weather_df.totalAmount > 0)"
 						],
 						"outputs": [],
-						"execution_count": 20
+						"execution_count": 21
 					},
 					{
 						"cell_type": "markdown",
+						"metadata": {},
 						"source": [
 							"## Cleaning up the existing Database\n",
 							"\n",
@@ -877,24 +910,27 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"spark.sql(\"DROP TABLE IF EXISTS NYCTaxi.nyc_taxi_holiday_weather\"); "
 						],
 						"outputs": [],
-						"execution_count": 21
+						"execution_count": 22
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"spark.sql(\"DROP DATABASE IF EXISTS NYCTaxi\"); \n",
 							"spark.sql(\"CREATE DATABASE NYCTaxi\"); \n",
 							"spark.sql(\"USE NYCTaxi\");"
 						],
 						"outputs": [],
-						"execution_count": 22
+						"execution_count": 23
 					},
 					{
 						"cell_type": "markdown",
+						"metadata": {},
 						"source": [
 							"## Creating a new table\n",
 							"We create a nyc_taxi_holiday_weather table from the nyc_taxi_holiday_weather dataframe.\n",
@@ -903,6 +939,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"from pyspark.sql import SparkSession\n",
 							"from pyspark.sql.types import *\n",
@@ -911,7 +948,7 @@
 							"spark.sql(\"SELECT COUNT(*) FROM nyc_taxi_holiday_weather\").show();"
 						],
 						"outputs": [],
-						"execution_count": 23
+						"execution_count": 24
 					},
 					{
 						"cell_type": "code",
@@ -928,10 +965,110 @@
 							"collapsed": true
 						},
 						"source": [
-							"final_df.coalesce(1).write.parquet(\"abfss://root@synapsecicd21store.dfs.core.windows.net/nyc/nycweather\")"
+							"#final_df.coalesce(1).write.parquet(\"abfss://root@synapsecicd21store.dfs.core.windows.net/nyc/nycweather\")"
 						],
 						"outputs": [],
 						"execution_count": 24
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"collapsed": false
+						},
+						"source": [
+							"display(final_df)"
+						],
+						"outputs": [],
+						"execution_count": 26
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"collapsed": true
+						},
+						"source": [
+							"final_df.coalesce(1).write.format(\"parquet\").mode(\"overwrite\").save(\"abfss://root@synapsecicd21store.dfs.core.windows.net/nyc/\")"
+						],
+						"outputs": [],
+						"execution_count": 27
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"collapsed": true
+						},
+						"source": [
+							"final_df.coalesce(1).write.format('csv').mode(\"overwrite\").save('abfss://root@synapsecicd21store.dfs.core.windows.net/nyccsv/',header = 'true')"
+						],
+						"outputs": [],
+						"execution_count": 34
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"collapsed": true
+						},
+						"source": [
+							"dfread = spark.read.parquet('abfss://root@synapsecicd21store.dfs.core.windows.net/nyc/')"
+						],
+						"outputs": [],
+						"execution_count": 28
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"collapsed": false
+						},
+						"source": [
+							"display(dfread)"
+						],
+						"outputs": [],
+						"execution_count": 29
 					}
 				]
 			},
