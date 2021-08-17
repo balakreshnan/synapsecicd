@@ -1,0 +1,15 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"workspaceName": {
+			"value": "synapsecicd21"
+		},
+		"synapsecicd21-WorkspaceDefaultSqlServer_connectionString": {
+			"value": ""
+		},
+		"synapsecicd21-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"value": "https://synapsecicd21store.dfs.core.windows.net"
+		}
+	}
+}
